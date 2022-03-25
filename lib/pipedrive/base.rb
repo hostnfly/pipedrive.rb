@@ -1,4 +1,6 @@
 module Pipedrive
+  class ParsingError < StandardError; end
+
   class Base
     def initialize(api_token = ::Pipedrive.api_token)
       fail 'api_token should be set' unless api_token.present?
@@ -14,7 +16,11 @@ module Pipedrive
       method = args[0]
       fail 'method param missing' unless method.present?
       url = build_url(args, params.delete(:fields_to_select))
-      res = connection.__send__(method.to_sym, url, params)
+      begin
+        res = connection.__send__(method.to_sym, url, params)
+      rescue Faraday::ParsingError
+        raise ParsingError
+      end
       process_response(res)
     end
 
