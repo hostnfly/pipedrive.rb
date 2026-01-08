@@ -1,6 +1,14 @@
 # frozen_string_literal: true
 
 module Pipedrive
+  class RateLimitError < StandardError
+    attr_reader :response
+
+    def initialize(response)
+      @response = response
+    end
+  end
+
   class Base
     def initialize(api_token = ::Pipedrive.api_token)
       raise 'api_token should be set' unless api_token.present?
@@ -57,6 +65,8 @@ module Pipedrive
         failed_res[:not_authorized] = true
       when 420
         failed_res[:failed] = true
+      when 429
+        raise RateLimitError.new(res)
       end
       failed_res
     end
