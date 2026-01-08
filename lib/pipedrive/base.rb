@@ -17,16 +17,13 @@ module Pipedrive
       method = args[0]
       raise 'method param missing' unless method.present?
 
-      url = build_url(args, params.delete(:fields_to_select))
       begin
+        url = build_url(args, params.delete(:fields_to_select))
         res = connection.__send__(method.to_sym, url, params)
-      rescue Errno::ETIMEDOUT
-        retry
-      rescue Faraday::ParsingError
-        sleep 5
-        retry
+      rescue Faraday::ParsingError => e
+        res = e.response
       end
-      process_response(res)
+      process_response(res).merge(status: res.status)
     end
 
     def build_url(args, fields_to_select = nil)
@@ -50,8 +47,11 @@ module Pipedrive
     end
 
     def failed_response(res)
-      failed_res = res.body.merge(success: false, not_authorized: false,
-                                  failed: false)
+      failed_res = if res.body.is_a?(::Hashie::Mash)
+        res.body.merge(success: false, not_authorized: false, failed: false)
+      else
+        ::Hashie::Mash.new(success: false, not_authorized: false, failed: false)
+      end
       case res.status
       when 401
         failed_res[:not_authorized] = true
