@@ -2,6 +2,7 @@
 
 require 'logger'
 require 'active_support/core_ext/hash'
+require 'active_support/core_ext/array'
 require 'active_support/concern'
 require 'active_support/inflector'
 
@@ -50,6 +51,14 @@ require 'pipedrive/operations/create'
 require 'pipedrive/operations/read'
 require 'pipedrive/operations/update'
 require 'pipedrive/operations/delete'
+
+# Core V2
+require 'pipedrive/v2/utils'
+require 'pipedrive/v2/base'
+require 'pipedrive/v2/operations/create'
+require 'pipedrive/v2/operations/read'
+require 'pipedrive/v2/operations/update'
+require 'pipedrive/v2/operations/delete'
 
 # Persons
 require 'pipedrive/person_field'

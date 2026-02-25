@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.4.0](https://github.com/hostnfly/pipedrive.rb/compare/v0.3.0...v0.4.0) - 2026-02-27
+
+### Added
+- Pipedrive API v2 infrastructure (`Pipedrive::V2::Base`, `V2::Utils`, `V2::Operations::*`)
+- Cursor-based pagination for v2 endpoints
+- `x-api-token` header authentication for v2
+
 ## [v0.3.0](https://github.com/amoniacou/pipedrive.rb/compare/v0.2.0...v0.3.0) - 2020-10-10
 
 ### Merged
