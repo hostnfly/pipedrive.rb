@@ -87,6 +87,7 @@ require 'pipedrive/goal'
 # Activities
 require 'pipedrive/activity'
 require 'pipedrive/activity_type'
+require 'pipedrive/v2/activity'
 
 # Deals
 require 'pipedrive/deal_field'
