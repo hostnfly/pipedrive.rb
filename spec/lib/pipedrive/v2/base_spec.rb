@@ -78,6 +78,18 @@ RSpec.describe ::Pipedrive::V2::Base do
       end
     end
 
+    context 'request body encoding' do
+      it 'sends body as JSON with integer values preserved' do
+        stub_request(:post, "https://api.pipedrive.com/api/v2/#{entity}")
+          .with(
+            headers: { 'Content-Type' => 'application/json' },
+            body: { owner_id: 11592426 }.to_json
+          )
+          .to_return(status: 200, body: {}.to_json, headers: {})
+        expect(subject.make_api_call(:post, owner_id: 11592426)).to be_success
+      end
+    end
+
     context 'with id' do
       it 'calls :get with id in path' do
         stub_request(:get, "https://api.pipedrive.com/api/v2/#{entity}/12")
