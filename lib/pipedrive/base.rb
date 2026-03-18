@@ -94,13 +94,19 @@ module Pipedrive
       # :nodoc
       def connection
         @connection ||= Faraday.new(faraday_options) do |conn|
-          conn.request :url_encoded
+          conn.request params_format
           conn.response :mashify
           conn.response :json, content_type: /\bjson$/
           conn.use FaradayMiddleware::ParseJson
           conn.response :logger, ::Pipedrive.logger if ::Pipedrive.debug
           conn.adapter Faraday.default_adapter
         end
+      end
+
+      private
+
+      def params_format
+        :url_encoded
       end
     end
   end
