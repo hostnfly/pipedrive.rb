@@ -92,6 +92,7 @@ require 'pipedrive/v2/activity'
 # Deals
 require 'pipedrive/deal_field'
 require 'pipedrive/deal'
+require 'pipedrive/v2/deal'
 
 # Files
 require 'pipedrive/file'
