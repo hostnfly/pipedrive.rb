@@ -17,7 +17,7 @@ RSpec.describe ::Pipedrive::Base do
     it {
       expect(subject).to eq({
                               url:     'https://api.pipedrive.com',
-      headers: { accept: 'application/json', user_agent: 'Pipedrive Ruby Client v0.2.0' }
+      headers: { accept: 'application/json', user_agent: "Pipedrive Ruby Client v#{::Pipedrive::VERSION}" }
                             })
     }
   end
@@ -33,40 +33,34 @@ RSpec.describe ::Pipedrive::Base do
 
     let(:res) { double('res', body: ::Hashie::Mash.new({}), status: status) }
 
-    context 'status is 401' do
-      let(:status) { 401 }
-
-      it {
-        expect(subject).to eq(::Hashie::Mash.new({
-                                                   failed:         false,
-                                                  not_authorized: true,
-                                                  success:        false
-                                                 }))
-      }
-    end
-
-    context 'status is 420' do
-      let(:status) { 420 }
-
-      it {
-        expect(subject).to eq(::Hashie::Mash.new({
-                                                   failed:         true,
-                                                  not_authorized: false,
-                                                  success:        false
-                                                 }))
-      }
-    end
-
     context 'status is 400' do
       let(:status) { 400 }
+      it { expect { subject }.to raise_error(::Pipedrive::BadRequestError) }
+    end
 
-      it {
-        expect(subject).to eq(::Hashie::Mash.new({
-                                                   failed:         false,
-                                                  not_authorized: false,
-                                                  success:        false
-                                                 }))
-      }
+    context 'status is 401' do
+      let(:status) { 401 }
+      it { expect { subject }.to raise_error(::Pipedrive::UnauthorizedError) }
+    end
+
+    context 'status is 403' do
+      let(:status) { 403 }
+      it { expect { subject }.to raise_error(::Pipedrive::ForbiddenError) }
+    end
+
+    context 'status is 404' do
+      let(:status) { 404 }
+      it { expect { subject }.to raise_error(::Pipedrive::NotFoundError) }
+    end
+
+    context 'status is 429' do
+      let(:status) { 429 }
+      it { expect { subject }.to raise_error(::Pipedrive::RateLimitError) }
+    end
+
+    context 'status is 500' do
+      let(:status) { 500 }
+      it { expect { subject }.to raise_error(::Pipedrive::APIError) }
     end
   end
 
@@ -140,16 +134,14 @@ RSpec.describe ::Pipedrive::Base do
       end
     end
 
-    it 'calls Hashie::Mash if return empty string' do
+    it 'returns success: true for empty body' do
       stub_request(:get, 'https://api.pipedrive.com/v1/bases?api_token=token').to_return(status: 200, body: '', headers: {})
-      expect(::Hashie::Mash).to receive(:new).with(success: true).and_call_original
-      expect(subject.make_api_call(:get))
+      expect(subject.make_api_call(:get).success).to be true
     end
 
-    it 'calls #failed_response if failed status' do
-      stub_request(:get, 'https://api.pipedrive.com/v1/bases?api_token=token').to_return(status: 400, body: '', headers: {})
-      expect(subject).to receive(:failed_response)
-      expect(subject.make_api_call(:get))
+    it 'raises an error if failed status' do
+      stub_request(:get, 'https://api.pipedrive.com/v1/bases?api_token=token').to_return(status: 400, body: {}.to_json, headers: {})
+      expect { subject.make_api_call(:get) }.to raise_error(::Pipedrive::APIError)
     end
   end
 end
