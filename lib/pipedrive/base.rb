@@ -1,13 +1,21 @@
 # frozen_string_literal: true
 
 module Pipedrive
-  class RateLimitError < StandardError
-    attr_reader :response
+  class APIError < StandardError
+    attr_reader :status, :code
 
-    def initialize(response)
-      @response = response
+    def initialize(error, status, code=nil)
+      super(error)
+      @status = status
+      @code = code
     end
   end
+
+  RateLimitError = Class.new(APIError)
+  NotFoundError = Class.new(APIError)
+  BadRequestError = Class.new(APIError)
+  UnauthorizedError = Class.new(APIError)
+  ForbiddenError = Class.new(APIError)
 
   class Base
     def initialize(api_token = ::Pipedrive.api_token)
@@ -55,22 +63,25 @@ module Pipedrive
     end
 
     def failed_response(res)
-      failed_res = if res.body.is_a?(::Hashie::Mash)
-        res.body.merge(success: false, not_authorized: false, failed: false, not_found: false)
+      if res.body.is_a?(::Hashie::Mash)
+        data = res.body
       else
-        ::Hashie::Mash.new(success: false, not_authorized: false, failed: false, not_found: false)
+        data = ::Hashie::Mash.new(error: 'Unknown error', code: nil)
       end
+
       case res.status
+      when 400
+        raise BadRequestError.new(data.error, res.status, data.code)
       when 401
-        failed_res[:not_authorized] = true
+        raise UnauthorizedError.new(data.error, res.status)
+      when 403
+        raise ForbiddenError.new(data.error, res.status)
       when 404
-        failed_res[:not_found] = true
-      when 420
-        failed_res[:failed] = true
+        raise NotFoundError.new(data.error, res.status, data.code)
       when 429
-        raise RateLimitError.new(res)
+        raise RateLimitError.new('Rate limit exceeded', res.status)
       end
-      failed_res
+      raise APIError.new(data.error, res.status, data.code)
     end
 
     def entity_name
