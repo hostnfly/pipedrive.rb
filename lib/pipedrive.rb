@@ -63,6 +63,7 @@ require 'pipedrive/v2/operations/delete'
 # Persons
 require 'pipedrive/person_field'
 require 'pipedrive/person'
+require 'pipedrive/v2/person'
 
 # Organizations
 require 'pipedrive/organization_field'
