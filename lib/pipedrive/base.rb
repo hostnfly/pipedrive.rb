@@ -16,6 +16,7 @@ module Pipedrive
   BadRequestError = Class.new(APIError)
   UnauthorizedError = Class.new(APIError)
   ForbiddenError = Class.new(APIError)
+  InternalServerError = Class.new(APIError)
 
   class Base
     def initialize(api_token = ::Pipedrive.api_token)
@@ -80,6 +81,8 @@ module Pipedrive
         raise NotFoundError.new(data.error, res.status, data.code)
       when 429
         raise RateLimitError.new('Rate limit exceeded', res.status)
+      when 500
+        raise InternalServerError.new(data.error, res.status)
       end
       raise APIError.new(data.error, res.status, data.code)
     end
