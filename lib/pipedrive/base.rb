@@ -5,7 +5,7 @@ module Pipedrive
     attr_reader :status, :code
 
     def initialize(error, status, code=nil)
-      super(error)
+      super([error, code].compact.join(' '))
       @status = status
       @code = code
     end
